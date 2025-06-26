@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poemas Románticos para Ti</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "💕";
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            top: -20px;
+            right: -20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .poem-viewer {
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        .poem {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .poem.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .poem.prev {
+            transform: translateX(-100%);
+        }
+
+        .poem::before {
+            content: "❤️";
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            opacity: 0.3;
+        }
+
+        .poem h2 {
+            color: #ff6b6b;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .poem-text {
+            line-height: 1.8;
+            font-size: 1.2em;
+            color: #555;
+            font-style: italic;
+            max-width: 600px;
+        }
+
+        .poem-text p {
+            margin-bottom: 20px;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 40px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .nav-button:active {
+            transform: translateY(0);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
+        }
+
+        .poem-counter {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(118, 75, 162, 0.3);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 107, 107, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            transition: width 0.6s ease;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .footer {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            font-size: 1.1em;
+        }
+
+        .hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .heart {
+            position: absolute;
+            color: rgba(255, 107, 107, 0.3);
+            font-size: 20px;
+            animation: fall 10s linear infinite;
+        }
+
+        .auto-play-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .auto-play-button {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .auto-play-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .auto-play-button.playing {
+            background: linear-gradient(45deg, #f44336, #e57373);
+            box-shadow: 0 3px 10px rgba(244, 67, 54, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .poem {
+                padding: 40px 20px;
+            }
+            
+            .poem h2 {
+                font-size: 1.8em;
+            }
+            
+            .poem-text {
+                font-size: 1.1em;
+            }
+            
+            .navigation {
+                padding: 20px;
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .nav-button {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts" id="hearts"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Versos de Amor</h1>
+            <p>Poemas escritos desde el corazón para ti</p>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="poem-viewer" id="poemViewer">
+            <div class="poem active">
+                <h2>Tu Mirada</h2>
+                <div class="poem-text">
+                    <p>En tus ojos encuentro el universo,<br>
+                    galaxias que danzan al ritmo de tu alma,<br>
+                    y en cada parpadeo descubro<br>
+                    la poesía que mi corazón proclama.</p>
+                    
+                    <p>Eres la luz que ilumina mis días,<br>
+                    la melodía que canta en mi pecho,<br>
+                    y en tu sonrisa hallo la certeza<br>
+                    de que el amor es perfecto.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Susurros del Alma</h2>
+                <div class="poem-text">
+                    <p>Cuando pronuncias mi nombre,<br>
+                    el tiempo se detiene en calma,<br>
+                    y cada sílaba que sale de tus labios<br>
+                    es caricia que abraza mi alma.</p>
+                    
+                    <p>Eres mi refugio en la tormenta,<br>
+                    mi sol cuando llega la noche,<br>
+                    y en tus brazos encuentro la paz<br>
+                    que mi corazón conoce.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Jardín de Rosas</h2>
+                <div class="poem-text">
+                    <p>Si fueras una flor en mi jardín,<br>
+                    serías la rosa más hermosa,<br>
+                    la que perfuma cada amanecer<br>
+                    y hace que mi vida sea dichosa.</p>
+                    
+                    <p>Tus pétalos son suaves como seda,<br>
+                    tu fragancia embriaga mi sentir,<br>
+                    y en tu belleza natural encuentro<br>
+                    la razón de mi existir.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Luna de Mis Noches</h2>
+                <div class="poem-text">
+                    <p>Eres la luna que ilumina<br>
+                    mis noches más oscuras,<br>
+                    la estrella que guía mis pasos<br>
+                    cuando el camino se desdibuja.</p>
+                    
+                    <p>En tu voz encuentro el eco<br>
+                    de mil promesas de amor,<br>
+                    y en cada palabra tuya vibra<br>
+                    la sinfonía de mi corazón.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Eternidad</h2>
+                <div class="poem-text">
+                    <p>Si pudiera escribir en las estrellas<br>
+                    todo lo que siento por ti,<br>
+                    el cielo nocturno brillaría<br>
+                    con la luz de mi amor sin fin.</p>
+                    
+                    <p>Eres mi presente y mi futuro,<br>
+                    mi razón de ser y de amar,<br>
+                    y en esta vida y en las que vengan<br>
+                    contigo quiero caminar.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Mariposas en Mi Pecho</h2>
+                <div class="poem-text">
+                    <p>Cuando caminas hacia mí,<br>
+                    mariposas despiertan en mi pecho,<br>
+                    y cada paso que das<br>
+                    es música que me deja sin aliento.</p>
+                    
+                    <p>Tu risa es campanitas de cristal<br>
+                    que suenan en primavera,<br>
+                    y en tu alegría encuentro<br>
+                    la felicidad verdadera.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Océano de Sentimientos</h2>
+                <div class="poem-text">
+                    <p>Mi amor por ti es como el océano,<br>
+                    profundo, infinito y azul,<br>
+                    con olas que van y vienen<br>
+                    llevando mi alma hacia tu luz.</p>
+                    
+                    <p>En cada marea encuentro<br>
+                    nuevas formas de amarte,<br>
+                    y en la inmensidad del mar<br>
+                    veo la eternidad de entregarte.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Primavera en Tu Sonrisa</h2>
+                <div class="poem-text">
+                    <p>Tu sonrisa es primavera<br>
+                    que florece en mi corazón,<br>
+                    y donde quiera que estés<br>
+                    llevas la luz del sol.</p>
+                    
+                    <p>Eres el perfume de jazmines<br>
+                    que embriaga mi existir,<br>
+                    y en tu dulce compañía<br>
+                    aprendo a vivir.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Sinfonía de Amor</h2>
+                <div class="poem-text">
+                    <p>Si mi corazón fuera un piano,<br>
+                    tú serías la melodía,<br>
+                    las notas que danzan juntas<br>
+                    creando nuestra sinfonía.</p>
+                    
+                    <p>Cada latido es una canción<br>
+                    dedicada solo a ti,<br>
+                    y en esta música del alma<br>
+                    encuentro mi razón de vivir.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Estrella de Mi Cielo</h2>
+                <div class="poem-text">
+                    <p>Entre millones de estrellas<br>
+                    tú eres la más brillante,<br>
+                    la que guía mis sueños<br>
+                    con su luz deslumbrante.</p>
+                    
+                    <p>Eres mi constelación favorita,<br>
+                    mi deseo al amanecer,<br>
+                    y en tu celestial belleza<br>
+                    encuentro mi renacer.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Cartas de Amor al Viento</h2>
+                <div class="poem-text">
+                    <p>Escribo cartas de amor al viento<br>
+                    para que lleguen hasta ti,<br>
+                    palabras que vuelan libres<br>
+                    desde lo profundo de mí.</p>
+                    
+                    <p>Que cada brisa te susurre<br>
+                    lo mucho que te amo,<br>
+                    y que en cada atardecer<br>
+                    sepas que por ti me entrego.</p>
+                </div>
+            </div>
+            
+            <div class="poem">
+                <h2>Refugio de Mi Alma</h2>
+                <div class="poem-text">
+                    <p>En tus brazos encuentro el hogar<br>
+                    que tanto tiempo busqué,<br>
+                    el lugar donde mi alma descansa<br>
+                    y donde la paz encontré.</p>
+                    
+                    <p>Eres mi puerto seguro<br>
+                    en medio de la tempestad,<br>
+                    y en tu amor encuentro<br>
+                    la más dulce tranquilidad.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="navigation">
+            <button class="nav-button" id="prevBtn">
+                <span>❮</span> Anterior
+            </button>
+            
+            <div class="auto-play-controls">
+                <button class="auto-play-button" id="autoPlayBtn">
+                    ▶ Auto
+                </button>
+                <div class="poem-counter">
+                    <span id="currentPoem">1</span> / <span id="totalPoems">12</span>
+                </div>
+            </div>
+            
+            <button class="nav-button" id="nextBtn">
+                Siguiente <span>❯</span>
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p>Con todo mi amor, para la mujer que ilumina mi mundo ✨</p>
+        </div>
+    </div>
+
+    <script>
+        let currentPoemIndex = 0;
+        let autoPlayInterval = null;
+        let isAutoPlaying = false;
+        const poems = document.querySelectorAll('.poem');
+        const totalPoems = poems.length;
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const autoPlayBtn = document.getElementById('autoPlayBtn');
+        const currentPoemSpan = document.getElementById('currentPoem');
+        const totalPoemsSpan = document.getElementById('totalPoems');
+        const progressFill = document.getElementById('progressFill');
+        
+        // Inicializar
+        totalPoemsSpan.textContent = totalPoems;
+        updateUI();
+        
+        function showPoem(index) {
+            poems.forEach((poem, i) => {
+                poem.classList.remove('active', 'prev');
+                if (i === index) {
+                    poem.classList.add('active');
+                } else if (i < index) {
+                    poem.classList.add('prev');
+                }
+            });
+            
+            currentPoemIndex = index;
+            updateUI();
+        }
+        
+        function updateUI() {
+            currentPoemSpan.textContent = currentPoemIndex + 1;
+            
+            // Actualizar barra de progreso
+            const progress = ((currentPoemIndex + 1) / totalPoems) * 100;
+            progressFill.style.width = progress + '%';
+            
+            // Actualizar botones
+            prevBtn.disabled = currentPoemIndex === 0;
+            nextBtn.disabled = currentPoemIndex === totalPoems - 1;
+        }
+        
+        function nextPoem() {
+            if (currentPoemIndex < totalPoems - 1) {
+                showPoem(currentPoemIndex + 1);
+            } else if (isAutoPlaying) {
+                showPoem(0); // Volver al inicio en modo auto
+            }
+        }
+        
+        function prevPoem() {
+            if (currentPoemIndex > 0) {
+                showPoem(currentPoemIndex - 1);
+            }
+        }
+        
+        function toggleAutoPlay() {
+            if (isAutoPlaying) {
+                clearInterval(autoPlayInterval);
+                autoPlayBtn.innerHTML = '▶ Auto';
+                autoPlayBtn.classList.remove('playing');
+                isAutoPlaying = false;
+            } else {
+                autoPlayInterval = setInterval(nextPoem, 4000);
+                autoPlayBtn.innerHTML = '⏸ Pausar';
+                autoPlayBtn.classList.add('playing');
+                isAutoPlaying = true;
+            }
+        }
+        
+        // Event listeners
+        nextBtn.addEventListener('click', nextPoem);
+        prevBtn.addEventListener('click', prevPoem);
+        autoPlayBtn.addEventListener('click', toggleAutoPlay);
+        
+        // Navegación con teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextPoem();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevPoem();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                toggleAutoPlay();
+            }
+        });
+        
+        // Navegación táctil
+        let startX = 0;
+        let endX = 0;
+        
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+        
+        document.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const threshold = 50;
+            const diff = startX - endX;
+            
+            if (Math.abs(diff) > threshold) {
+                if (diff > 0) {
+                    nextPoem(); // Swipe left - next poem
+                } else {
+                    prevPoem(); // Swipe right - previous poem
+                }
+            }
+        }
+        
+        // Crear corazones flotantes
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.animationDuration = Math.random() * 3 + 7 + 's';
+            heart.style.opacity = Math.random() * 0.3 + 0.1;
+            
+            document.getElementById('hearts').appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 10000);
+        }
+        
+        // Crear corazones cada 3 segundos
+        setInterval(createHeart, 3000);
+        
+        // Crear algunos corazones iniciales
+        for(let i = 0; i < 5; i++) {
+            setTimeout(createHeart, i * 1000);
+        }
+    </script>
+</body>
+</html>
